@@ -1,1 +1,6 @@
 API_TOKEN="6679454276:AAF5cxYCdje40NsxAK2b_t4zxHiURz4OMcU"
+DB_NAME="vote-blockchain-aiogram"
+DB_HOST="localhost"
+DB_USER="postgres"
+DB_PASSWORD="qwerty"
+DB_PORT="5432"

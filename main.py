@@ -1,15 +1,17 @@
-from aiogram import Bot,Dispatcher
-from aiogram.types import Message
-from aiogram.filters import Command
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram import Bot
 from config import API_TOKEN
+from handler.handlers import router,dp
+from models.db import DB
+import asyncio
 
-bot = Bot(token=API_TOKEN)
-dp = Dispatcher()
+async def main():
+    
 
-
-
-if __name__ == "__main__":
-    dp.run_polling(bot)
+    bot = Bot(API_TOKEN)
+    dp.include_routers(router)
+    await DB.create()
+    await dp.start_polling(bot)
+    
+asyncio.run(main())
 
 
