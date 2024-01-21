@@ -73,9 +73,13 @@ class SimpleBlockchain:
         return hashlib.sha256(value).hexdigest()
 
     def add_block(self, data):
-        DB.cursor.execute("SELECT index FROM blockchain ORDER BY index DESC LIMIT 1")
-        index = DB.cursor.fetchone()[0]+1
-        previous_block_hash = self.prev_block.hash
+        DB.cursor.execute("SELECT * FROM blockchain ORDER BY index DESC LIMIT 1")
+        result = DB.cursor.fetchone()
+        prev_block = result
+        p_index, p_previous_hash, p_timestamp, p_data, p_hash_value = prev_block
+        
+        index = p_index+1
+        previous_block_hash = p_hash_value
         timestamp = int(time.time())
         hash_value = self.calculate_hash(index, previous_block_hash, timestamp, data)
         new_block = Block(index, previous_block_hash, timestamp, data, hash_value)
