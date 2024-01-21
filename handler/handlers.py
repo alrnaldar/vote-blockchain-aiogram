@@ -38,20 +38,18 @@ async def add_option(msg:Message,state:FSMContext):
     if msg.text.lower() != "/finish":
         options.append(msg.text.lower())
     else:
-        # from utils import addblock
-        await msg.answer(f"{options}")
         payload = await state.get_data()
+        await msg.answer(f"Голосование:\n{payload["name"]}\nВарианты выбора:\n{"".join(f"{i}.{option}\n"for i,option in enumerate(options,start=1))}")
         poll_id = await DB.create_poll(name=payload["name"],user_id=msg.from_user.id)
-        # hash = addblock.addblock("poll")
-        # DB.cursor.execute(f"INSERT INTO polls(block,title,user_id) VALUES('{hash}','{payload["name"]}',{msg.from_user.id})")
-        # DB.cursor.execute(f"SELECT id FROM polls WHERE block = ")
+       
         for option in options:
             await DB.create_option(poll_id=poll_id,option=option)
-            # DB.cursor.execute(f"INSERT INTO options(block,text,poll_id) VALUES('{await addblock.addblock("vote")}','{option}','')")
-        await msg.answer("ваше голосование успешно создано")
+        
+
+        await msg.answer("✅ ваше голосование успешно создано ✅")
         await state.clear()
         options.clear()
-    
+        return
     await msg.answer(text="Вариант добавлен, при необходимости можете продолжить добавлять\nесли больше нет вариантов /finish")
 
 @dp.message(lambda msg: msg.text == "блок")
