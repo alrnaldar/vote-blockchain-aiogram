@@ -5,51 +5,46 @@ class Database:
     async def create(self):
         self.conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT)
         self.cursor = self.conn.cursor()
-        # self.cursor.execute("""
-        #     CREATE TABLE IF NOT EXISTS blockchain (
-        #         index SERIAL PRIMARY KEY,
-        #         prev_hash VARCHAR NOT NULL,
-        #         timestamp TIMESTAMP NOT NULL,
-        #         data VARCHAR NOT NULL,
-        #         hash VARCHAR NOT NULL UNIQUE
-        #     )
-        # """)
-    
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                blocks VARCHAR
+            );
+        """)
 
-        # self.cursor.execute("""
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS blockchain (
+                index SERIAL PRIMARY KEY,
+                prev_hash VARCHAR NOT NULL,
+                timestamp TIMESTAMP NOT NULL,
+                data VARCHAR NOT NULL,
+                hash VARCHAR NOT NULL UNIQUE,
+                owner INTEGER REFERENCES users(id)
+            );
+        """)
 
-        #     CREATE TABLE IF NOT EXISTS users (
-        #         id VARCHAR PRIMARY KEY
-        #     )
-        # """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS polls (
+                block VARCHAR REFERENCES blockchain(hash) PRIMARY KEY,
+                title VARCHAR NOT NULL
+            );
+        """)
 
-        # self.cursor.execute("""
-        #     CREATE TABLE IF NOT EXISTS polls (
-        #         id SERIAL PRIMARY KEY,
-        #         block VARCHAR REFERENCES blockchain(hash),
-        #         title VARCHAR NOT NULL,
-        #         user_id VARCHAR REFERENCES users(id) NOT NULL
-        #     )
-        # """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS options (
+                block VARCHAR REFERENCES blockchain(hash) PRIMARY KEY,
+                text VARCHAR NOT NULL,
+                poll_block VARCHAR REFERENCES polls(block) NOT NULL
+            );
+        """)
 
-        # self.cursor.execute("""
-        #     CREATE TABLE IF NOT EXISTS options (
-        #         id SERIAL PRIMARY KEY,
-        #         block VARCHAR REFERENCES blockchain(hash),
-        #         text VARCHAR NOT NULL,
-        #         poll_id INTEGER REFERENCES polls(id) NOT NULL
-        #     )
-        # """)
-
-        # self.cursor.execute("""
-        #     CREATE TABLE IF NOT EXISTS votes (
-        #         id SERIAL PRIMARY KEY,
-        #         block VARCHAR REFERENCES blockchain(hash),
-        #         user_id VARCHAR REFERENCES users(id) NOT NULL,
-        #         poll_id VARCHAR REFERENCES polls(id) NOT NULL,
-        #         option_id INTEGER REFERENCES options(id) NOT NULL
-        #     )
-        # """)
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS votes (
+                block VARCHAR REFERENCES blockchain(hash) PRIMARY KEY,
+                poll_block VARCHAR REFERENCES polls(block) NOT NULL,
+                option_block VARCHAR REFERENCES options(block) NOT NULL
+            );
+        """)
         
         self.conn.commit()
     async def admin_select_all(self):
@@ -85,25 +80,27 @@ class Database:
 
     async def create_poll(self,name,user_id):
         from utils import addblock
-        hash = await addblock.addblock(f"poll:{name}")
+        try:
+            hash = await addblock.addblock(f"poll:{name}",user_id)
 
-        self.cursor.execute(f"INSERT INTO polls(block,title,user_id) VALUES('{hash}','{name}','{user_id}')")
-        self.cursor.execute(f"SELECT id FROM polls WHERE block = '{hash}'")
-        poll_id = self.cursor.fetchone()[0]
-        return poll_id
-    async def create_option(self,poll_id,option):
+            self.cursor.execute(f"INSERT INTO polls(block,title) VALUES('{hash}','{name}')")
+            poll_block = hash
+            return poll_block
+        except Exception:
+            return False
+    async def create_option(self,poll_block,option,user_id):
         from utils import addblock
-        hash = await addblock.addblock(f"option:{option}")
-        self.cursor.execute(f"INSERT INTO options(block,text,poll_id) VALUES('{hash}','{option}','{poll_id}')")
+        hash = await addblock.addblock(f"option:{option}",user_id)
+        self.cursor.execute(f"INSERT INTO options(block,text,poll_block) VALUES('{hash}','{option}','{poll_block}')")
         print(f"запись {option} создана 2")
     
     async def find_poll_by_hash(self,hash):
         self.cursor.execute(f"SELECT * FROM polls WHERE block = '{hash}'")
         result = self.cursor.fetchone()
-        poll_id, block, title, user_id = result
+        block, title = result
         return result
-    async def find_options_for_poll(self,id):
-        self.cursor.execute(f"SELECT * FROM options WHERE poll_id = '{id}'")
+    async def find_options_for_poll(self,poll_block):
+        self.cursor.execute(f"SELECT * FROM options WHERE poll_block = '{poll_block}'")
         result = self.cursor.fetchall()
         return result
 

@@ -71,13 +71,13 @@ async def add_option(msg:Message,state:FSMContext):
     else:
         payload = await state.get_data()
         await msg.answer(f"Голосование:\n{payload["name"]}\nВарианты выбора:\n{"".join(f"{i}.{option}\n"for i,option in enumerate(options,start=1))}")
-        poll_id = await DB.create_poll(name=payload["name"],user_id=msg.from_user.id)
+        poll_block = await DB.create_poll(name=payload["name"],user_id=msg.from_user.id)
        
         for option in options:
-            await DB.create_option(poll_id=poll_id,option=option)
+            await DB.create_option(poll_block=poll_block,option=option,user_id=msg.from_user.id)
             print(f"запись {option} создана 1")
     
-        await msg.answer(f"✅ ваше голосование успешно создано ✅\nчтобы поделиться используйте этот хеш:\n{poll_id}")
+        await msg.answer(f"✅ ваше голосование успешно создано ✅\nчтобы поделиться используйте этот хеш:\n{poll_block}")
         await state.clear()
         options.clear()
         return
@@ -90,17 +90,23 @@ async def vote_poll(callback: types.CallbackQuery,state:FSMContext):
 
 @dp.callback_query(F.data=="find_by_hash",States.voting)
 async def find_by_hash(callback: types.CallbackQuery,state:FSMContext):
-   poll = await DB.find_poll_by_hash("10b728726f6620970e532a74ecbf9cb299762daae2b402f44f7e94ce25b6be1d")
-   await callback.message.answer(f"✅Результат:\n\nНазвание:\n{poll[2]}\nХеш блока:\n{poll[1]}\n", reply_markup=poll_menu())
-   await state.update_data(poll_block=poll[1],poll_id=poll[0])
-
+   await callback.message.answer("Укажите хеш блока")
+   
+@dp.message(States.voting)
+async def get_hash_from_user(msg:Message,state:FSMContext):
+    poll = await DB.find_poll_by_hash(msg.text)
+    if poll == False:
+        await msg.answer("К сожалению не найденно голосования с таким хешем, попробуйте еще раз /start")
+    else:
+        await msg.answer(f"✅Результат:\n\nНазвание:\n{poll[1]}\nХеш блока:\n{poll[0]}\n", reply_markup=poll_menu())
+        await state.update_data(poll_block=poll[0])
 @dp.callback_query(F.data=="takepart_in_vote",States.voting)
 async def takepart_in_vote(callback:types.CallbackQuery,state:FSMContext):
     payload = await state.get_data()
-    data = await DB.find_options_for_poll(payload["poll_id"])
+    data = await DB.find_options_for_poll(payload["poll_block"])
     await callback.message.answer(
     f"Чтобы проголосовать отправьте в чат номер варианта:\n"
-    f"{''.join([f'{index}. {name}\n' for index, (_, _, name, _) in enumerate(data, start=1)])}"
+    f"{''.join([f'{index}. {name}\n' for index, (_, name, _) in enumerate(data, start=1)])}"
     )
     await state.set_state(States.sending_Vote)
 @dp.message(States.sending_Vote)
@@ -123,3 +129,4 @@ async def block(msg:Message):
     # await addblock.addblock("тест")
     pass
 
+#надо пофиксить то что последний option не заносится в бд
