@@ -80,25 +80,35 @@ class Database:
 
     async def create_poll(self,name,user_id):
         from utils import addblock
-        try:
-            hash = await addblock.addblock(f"poll:{name}",user_id)
 
-            self.cursor.execute(f"INSERT INTO polls(block,title) VALUES('{hash}','{name}')")
-            poll_block = hash
-            return poll_block
-        except Exception:
-            return False
+        hash = await addblock.addblock(f"poll:{name}",user_id)
+
+        self.cursor.execute(f"INSERT INTO polls(block,title) VALUES('{hash}','{name}')")
+        poll_block = hash
+        self.conn.commit()
+        return poll_block
+        
+        
     async def create_option(self,poll_block,option,user_id):
         from utils import addblock
         hash = await addblock.addblock(f"option:{option}",user_id)
         self.cursor.execute(f"INSERT INTO options(block,text,poll_block) VALUES('{hash}','{option}','{poll_block}')")
-        print(f"запись {option} создана 2")
-    
+        self.conn.commit()
+
+    async def create_vote(self, option_block,poll_block,user_id):
+        from utils import addblock
+        hash = await addblock.addblock(f"vote:option[{option_block}],poll:[{poll_block}]",user_id)
+        self.cursor.execute(f"INSERT INTO votes(block,poll_block,option_block) VALUES('{hash}','{poll_block}','{option_block}')")
+        self.conn.commit()
+
     async def find_poll_by_hash(self,hash):
-        self.cursor.execute(f"SELECT * FROM polls WHERE block = '{hash}'")
-        result = self.cursor.fetchone()
-        block, title = result
-        return result
+        try:
+            self.cursor.execute(f"SELECT * FROM polls WHERE block = '{hash}'")
+            result = self.cursor.fetchone()
+            block, title = result
+            return result
+        except Exception:
+            return False
     async def find_options_for_poll(self,poll_block):
         self.cursor.execute(f"SELECT * FROM options WHERE poll_block = '{poll_block}'")
         result = self.cursor.fetchall()
