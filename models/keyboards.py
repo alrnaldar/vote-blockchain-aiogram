@@ -30,14 +30,12 @@ def cancel():
     keyboard.button(text="Отмена", callback_data="cancel")
     return keyboard.as_markup()
 
-def options_buttons(option,dp):
-    buttons = [
-    InlineKeyboardButton(text=option, callback_data=f"aa") for i in range()
-    ]
-
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button] for button in buttons])
-    
-    return keyboard
+def options_buttons(option):
+    keyboard = InlineKeyboardBuilder()
+    for i in range(1,option+1):
+        keyboard.button(text=f"{i}", callback_data="asd")
+    keyboard.adjust(3)
+    return keyboard.as_markup()
 
 
 def options_scrolling_group(options):

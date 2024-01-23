@@ -2,7 +2,7 @@ from aiogram import Dispatcher, Router, F,types
 from aiogram.filters import Command,StateFilter
 from aiogram.types import Message
 from models.db import DB
-from models.keyboards import main_keyboard,select_vote_type,poll_menu, back_to_menu,cancel
+from models.keyboards import main_keyboard,select_vote_type,poll_menu, back_to_menu,cancel, options_buttons
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from typing import Union
@@ -17,14 +17,6 @@ class States(StatesGroup):
     voting = State()
     sending_Vote = State()
 
-# @dp.callback_query(F.data=="to_menu")
-# @dp.message(Command(commands=["start"]))
-# async def start(msg:Message,state:FSMContext,callback:types.CallbackQuery):
-
-#     user_id = str(msg.from_user.id)
-#     await DB.create_user(user_id)
-#     await msg.answer(text="Привет",reply_markup=main_keyboard())
-#     await state.clear()
 @dp.callback_query(F.data == "to_menu")
 @dp.message(Command(commands=["start"]))
 async def callbacks_profile(query_or_message: Union[types.CallbackQuery, types.Message], state: FSMContext):
@@ -108,25 +100,11 @@ async def takepart_in_vote(callback:types.CallbackQuery,state:FSMContext):
     # from models.keyboards import options_scrolling_group
     payload = await state.get_data()
     data = await DB.find_options_for_poll(payload["poll_block"])
-    await callback.message.answer(
-    f"Чтобы проголосовать отправьте в чат номер варианта:\n"
-    f"{''.join([f'{index}. {name}\n' for index, (_, name, _) in enumerate(data, start=1)])}"
-    )
+    text = f"Чтобы проголосовать отправьте в чат номер варианта:\n"f"{''.join([f'{index}. {name}\n' for index, (_, name, _) in enumerate(data, start=1)])}"
+    await callback.message.answer(text=text, reply_markup=options_buttons(len(data)))
     for i, (hash, name, _) in enumerate(data,start=1):
         my_dict[f"{i}"]={"name": name, "hash": hash}
     
-    # test_buttons = options_scrolling_group(range(1, len(data) + 1))
-
-    # scrolling_group = ScrollingGroup(
-    #     *test_buttons,
-    #     id="numbers",
-    #     width=6,
-    #     height=6,
-    # )
-    # await callback.message.answer("asd", reply_markup=scrolling_group)
-    from models.keyboards import options_buttons
-    
-    await callback.message.answer(f"{len(data)}", reply_markup=options_buttons(len(data),dp))
     await state.set_state(States.sending_Vote)
 
 @dp.message(States.sending_Vote)
