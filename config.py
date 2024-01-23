@@ -1,4 +1,4 @@
-API_TOKEN="6679454276:AAF5cxYCdje40NsxAK2b_t4zxHiURz4OMcU"
+API_TOKEN="6630269549:AAFJM5z1418sWDIk8MPMMjCrPSnuxC6pl3o"
 DB_NAME="vote-blockchain-aiogram"
 DB_HOST="localhost"
 DB_USER="postgres"

@@ -1,0 +1,7 @@
+#replace that values with your own values
+API_TOKEN=""
+DB_NAME=""
+DB_HOST="localhost"
+DB_USER="postgres"
+DB_PASSWORD=""
+DB_PORT="5432"
