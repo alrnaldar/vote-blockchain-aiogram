@@ -69,7 +69,6 @@ async def add_option(msg:Message,state:FSMContext):
         await state.update_data(opti=opti_list)
     else:
         payload = await state.get_data()
-        await msg.answer(f"{payload['opti']}")
         await msg.answer(f"📢Голосование:\n{payload["name"]}\n❗Варианты выбора:\n{"".join(f"{i}.{option}\n"for i,option in enumerate(payload['opti'],start=1))}")
         poll_block = await DB.create_poll(name=payload["name"],user_id=msg.from_user.id)
        
@@ -161,7 +160,7 @@ async def my_blocks(callback:types.CallbackQuery,state:FSMContext):
         await state.clear()
     else:
         await state.update_data(blocks=blocks,count=count)
-        await callback.message.answer(f'😏💸Вы являетесь владельцем {count} блоков\nесли хотите вывести список всех блоков нажмите на кнопку "показать все", но это может занять некоторое время',reply_markup=all_blocks())
+        await callback.message.answer(f'😏💸Вы являетесь владельцем {count} блоков\nесли хотите вывести список всех блоков нажмите на кнопку "показать все", но это может занять некоторое время и возможно вызовать сбой, если что пишите команду /start м',reply_markup=all_blocks())
     await state.set_state(States.looking_on_myblocks)
 
 @dp.callback_query(F.data=="show_all_blocks",States.looking_on_myblocks)
