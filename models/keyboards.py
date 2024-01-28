@@ -1,7 +1,4 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram_dialog.widgets.kbd import Button, ScrollingGroup
-from aiogram_dialog.widgets.text import Const
 
 
 def main_keyboard():

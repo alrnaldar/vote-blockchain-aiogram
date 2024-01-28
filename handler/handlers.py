@@ -75,7 +75,7 @@ async def add_option(msg:Message,state:FSMContext):
         for option in payload["opti"]:
             await DB.create_option(poll_block=poll_block,option=option,user_id=msg.from_user.id)
     
-        await msg.answer(f"✅ ваше голосование успешно создано ✅\nчтобы поделиться используйте этот хеш:\n")
+        await msg.answer(f"✅ ваше голосование успешно создано ✅\nчтобы поделиться используйте(скопируйте) этот хеш:\n")
         await msg.answer(f"{poll_block}",reply_markup=back_to_menu())
         await state.clear()
         options.clear()
@@ -132,7 +132,7 @@ async def get_vote(callback:types.CallbackQuery,state:FSMContext):
 
     _, vote_number = text.split("_")
     await DB.create_vote(my_dict[vote_number]["hash"], payload["poll_block"], callback.from_user.id)
-    await callback.message.answer(f'📢Вы проголосовали за:📣\n"{my_dict[vote_number]["name"]}"\nХеш вашего голоса:\n')
+    await callback.message.answer(f'📢Вы проголосовали за:📣\n"{my_dict[vote_number]["name"]}"\nВы можете найти ваш голос по этому хешу:\n')
     await callback.message.answer(f"{my_dict[vote_number]["hash"]}",reply_markup=back_to_menu())
     
     await my_dict.clear()
