@@ -26,9 +26,9 @@ async def callbacks_profile(query_or_message: Union[types.CallbackQuery, types.M
     await DB.create_user(user_id)
 
     if isinstance(query_or_message, types.CallbackQuery):
-        await query_or_message.message.answer(text="Этот бот - проектный продукт Алдара(@infoowner) - система голосований на основе технологии блокчейн(blockchain)", reply_markup=main_keyboard())
+        await query_or_message.message.answer(text="Система голосований на основе технологии блокчейн(blockchain)", reply_markup=main_keyboard())
     elif isinstance(query_or_message, types.Message):
-        await query_or_message.answer(text="Этот бот - проектный продукт Алдара(@infoowner) - система голосований на основе технологии блокчейн(blockchain)", reply_markup=main_keyboard())
+        await query_or_message.answer(text="Система голосований на основе технологии блокчейн(blockchain)", reply_markup=main_keyboard())
 
     await state.clear()
     
@@ -59,7 +59,7 @@ async def settingName(msg:Message,state:FSMContext):
 
 @dp.message(States.settingOptions)
 async def add_option(msg:Message,state:FSMContext):
-    if msg.text.lower() != "/finish":
+    if msg.text.lower() != "/finish"  :
         payload = await state.get_data()
 
         opti_list = payload.get("opti", [])
@@ -178,4 +178,4 @@ async def xxx(msg:Message):
 
 @dp.message(StateFilter(None))
 async def warning(msg:Message,state:FSMContext):
-    await msg.answer("👋👋Привет, я бот для проекта Алдара(@infoowner)\nЧтобы начать напиши /start", reply_markup=back_to_menu())
+    await msg.answer("👋👋Привет, я бот для проведения анонимных голосований на основе технологии блокчейн\nЧтобы начать напиши /start", reply_markup=back_to_menu())
